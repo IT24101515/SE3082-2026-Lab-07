@@ -1,0 +1,80 @@
+Program	        Communication used	     Memory	                                Manual summation on root?	Final result available
+Exercise 1	MPI_Bcast + Send/Recv	     Full array on every rank	                Yes	                        Root only
+Exercise 2	MPI_Scatter + Send/Recv	     Root has full array; each rank has a chunk	Yes	                        Root only
+Exercise 3	MPI_Scatter + MPI_Gather     Root full array; each rank has a chunk	Yes	                        Root only
+Exercise 4	MPI_Scatter + MPI_Reduce     Root full array; each rank has a chunk	No	                        Root only
+Exercise 5	MPI_Scatter + MPI_Allreduce  Root full array; each rank has a chunk	No	                        All ranks
+Exercise 6	MPI_Scatter + MPI_Scan	     Root full array; each rank has a chunk	No	                        Different prefix on each rank
+
+Exercise 7 - Summary Comparison
+
+1. Comparison of all programs
+
+Exercise 1 - MPI_Bcast + MPI_Send/MPI_Recv
+- Collectives used: MPI_Bcast
+- Memory: Every process stores the full array
+- Manual summation on root: Yes
+- Final result: Root only
+
+Exercise 2 - MPI_Scatter + MPI_Send/MPI_Recv
+- Collectives used: MPI_Scatter
+- Memory: Root stores the full array; each process stores only its chunk
+- Manual summation on root: Yes
+- Final result: Root only
+
+Exercise 3 - MPI_Scatter + MPI_Gather
+- Collectives used: MPI_Scatter, MPI_Gather
+- Memory: Root stores the full array; each process stores only its chunk
+- Manual summation on root: Yes
+- Final result: Root only
+
+Exercise 4 - MPI_Scatter + MPI_Reduce
+- Collectives used: MPI_Scatter, MPI_Reduce
+- Memory: Root stores the full array; each process stores only its chunk
+- Manual summation on root: No
+- Final result: Root only
+
+Exercise 5 - MPI_Scatter + MPI_Allreduce
+- Collectives used: MPI_Scatter, MPI_Allreduce
+- Memory: Root stores the full array; each process stores only its chunk
+- Manual summation on root: No
+- Final result: All processes
+
+Exercise 6 - MPI_Scatter + MPI_Scan
+- Collectives used: MPI_Scatter, MPI_Scan
+- Memory: Root stores the full array; each process stores only its chunk
+- Manual summation on root: No
+- Final result: Different prefix sum on each process
+
+
+2. Execution Times
+
+                 2 Processes    4 Processes    8 Processes
+Bcast            0.0032 s       0.0072 s       0.0061 s
+Scatter          0.0028 s       0.0024 s       0.0011 s
+Gather           0.0023 s       0.0013 s       0.0015 s
+Reduce           0.0022 s       0.0021 s       0.0020 s
+Allreduce        0.0023 s       0.0017 s       0.0013 s
+Scan             0.0086 s       0.0070 s       0.0081 s
+
+The fastest measured execution was MPI_Scatter with 8 processes at
+0.0011 seconds.
+
+MPI_Scatter is more memory-efficient than MPI_Bcast because each process
+receives only the data chunk it needs instead of receiving the complete
+array. Execution times may vary between runs because the programs are very
+short and communication overhead and system load can affect the results.
+
+
+3. Thinking Question
+
+MPI_Scan should be used when each process needs a cumulative result up to
+its own rank instead of every process receiving the same global result.
+
+For example, in a parallel prefix-sum calculation, each process can calculate
+the sum of its own chunk and MPI_Scan can provide the sum of all chunks up to
+that process. The value before the current process can then be used as a
+global offset for its local prefix sums.
+
+MPI_Allreduce would not be suitable for this case because it gives every
+process the same final global total.
